@@ -6,55 +6,67 @@
 
 <style>
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(#ffe6ef, #ffffff);
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(#ffe6ef,#fff);
 }
 
-.screen { display: none; padding: 20px; }
-.active { display: block; }
+.screen{display:none;padding:20px;}
+.active{display:block;}
 
-.login-card {
-  max-width: 350px;
-  margin: 100px auto;
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  text-align: center;
+.login-card{
+  max-width:350px;
+  margin:100px auto;
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
 }
 
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 12px;
-  border: 1px solid #ffd1e4;
+input,button,select{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid #ffd1e4;
 }
 
-button {
-  background: #ff5fa2;
-  color: white;
-  border: none;
+button{
+  background:#ff5fa2;
+  color:white;
+  border:none;
 }
 
-.menu {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 15px;
+.menu{
+  display:flex;
+  justify-content:space-around;
+  margin-bottom:15px;
 }
 
-.menu button {
-  width: auto;
-  padding: 8px 14px;
-  font-size: 14px;
+.menu button{
+  width:auto;
+  padding:8px 14px;
 }
 
-.card {
-  background: white;
-  padding: 15px;
-  border-radius: 16px;
-  margin-bottom: 10px;
+.card{
+  background:white;
+  padding:15px;
+  border-radius:16px;
+  margin-bottom:10px;
+}
+
+.progress-bar{
+  height:12px;
+  background:#eee;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.progress-bar div{
+  height:100%;
+  background:#ff5fa2;
+  width:0%;
 }
 </style>
 </head>
@@ -74,15 +86,15 @@ button {
 <!-- APP -->
 <div id="app" class="screen">
 
-  <!-- MENU -->
   <div class="menu">
     <button onclick="mostrar('metas')">🎯 Metas</button>
     <button onclick="mostrar('planner')">📅 Planner</button>
+    <button onclick="mostrar('progresso')">📊 Progresso</button>
   </div>
 
   <!-- METAS -->
   <div id="metas" class="card">
-    <h3>🎯 Minhas Metas</h3>
+    <h3>🎯 Metas do Ano</h3>
     <input id="novaMeta" placeholder="Nova meta">
     <button onclick="addMeta()">Adicionar</button>
     <ul id="listaMetas"></ul>
@@ -90,43 +102,112 @@ button {
 
   <!-- PLANNER -->
   <div id="planner" class="card" style="display:none;">
-    <h3>📅 Hoje</h3>
-    <input id="novaTarefa" placeholder="Nova tarefa">
-    <button onclick="addTarefa()">Adicionar</button>
-    <ul id="listaTarefas"></ul>
+    <h3>📅 Planner 2026</h3>
+
+    <select id="mes">
+      <option>Janeiro</option><option>Fevereiro</option>
+      <option>Março</option><option>Abril</option>
+      <option>Maio</option><option>Junho</option>
+      <option>Julho</option><option>Agosto</option>
+      <option>Setembro</option><option>Outubro</option>
+      <option>Novembro</option><option>Dezembro</option>
+    </select>
+
+    <input id="dia" type="number" min="1" max="31" placeholder="Dia">
+    <input id="tarefa" placeholder="Tarefa do dia">
+    <button onclick="addPlanner()">Adicionar</button>
+
+    <ul id="listaPlanner"></ul>
+  </div>
+
+  <!-- PROGRESSO -->
+  <div id="progresso" class="card" style="display:none;">
+    <h3>📊 Progresso Anual</h3>
+    <p id="textoProgresso">0% concluído</p>
+    <div class="progress-bar">
+      <div id="barra"></div>
+    </div>
   </div>
 
 </div>
 
 <script>
-function entrar() {
+let metas = JSON.parse(localStorage.getItem("metas")) || [];
+let planner = JSON.parse(localStorage.getItem("planner")) || [];
+
+function entrar(){
   login.classList.remove("active");
   app.classList.add("active");
+  renderTudo();
 }
 
-function mostrar(secao) {
-  metas.style.display = secao === "metas" ? "block" : "none";
-  planner.style.display = secao === "planner" ? "block" : "none";
+function mostrar(secao){
+  ["metas","planner","progresso"].forEach(id=>{
+    document.getElementById(id).style.display =
+      id===secao ? "block" : "none";
+  });
 }
 
-function addMeta() {
-  let texto = novaMeta.value;
-  if (!texto) return;
-  let li = document.createElement("li");
-  li.innerHTML = texto + " ❌";
-  li.onclick = () => li.remove();
-  listaMetas.appendChild(li);
-  novaMeta.value = "";
+function addMeta(){
+  if(!novaMeta.value) return;
+  metas.push(novaMeta.value);
+  localStorage.setItem("metas",JSON.stringify(metas));
+  novaMeta.value="";
+  renderMetas();
 }
 
-function addTarefa() {
-  let texto = novaTarefa.value;
-  if (!texto) return;
-  let li = document.createElement("li");
-  li.innerHTML = texto + " ✅";
-  li.onclick = () => li.remove();
-  listaTarefas.appendChild(li);
-  novaTarefa.value = "";
+function renderMetas(){
+  listaMetas.innerHTML="";
+  metas.forEach((m,i)=>{
+    let li=document.createElement("li");
+    li.innerHTML=m+" ❌";
+    li.onclick=()=>{
+      metas.splice(i,1);
+      localStorage.setItem("metas",JSON.stringify(metas));
+      renderTudo();
+    };
+    listaMetas.appendChild(li);
+  });
+}
+
+function addPlanner(){
+  planner.push({
+    mes:mes.value,
+    dia:dia.value,
+    texto:tarefa.value,
+    done:false
+  });
+  localStorage.setItem("planner",JSON.stringify(planner));
+  tarefa.value="";
+  renderTudo();
+}
+
+function renderPlanner(){
+  listaPlanner.innerHTML="";
+  planner.forEach((p,i)=>{
+    let li=document.createElement("li");
+    li.innerHTML = `${p.mes} ${p.dia}: ${p.texto} ${p.done?"✅":"⬜"}`;
+    li.onclick=()=>{
+      p.done=!p.done;
+      localStorage.setItem("planner",JSON.stringify(planner));
+      renderTudo();
+    };
+    listaPlanner.appendChild(li);
+  });
+}
+
+function renderProgresso(){
+  let total = planner.length;
+  let feitos = planner.filter(p=>p.done).length;
+  let perc = total ? Math.round(feitos/total*100) : 0;
+  textoProgresso.innerText = perc + "% concluído";
+  barra.style.width = perc + "%";
+}
+
+function renderTudo(){
+  renderMetas();
+  renderPlanner();
+  renderProgresso();
 }
 </script>
 
