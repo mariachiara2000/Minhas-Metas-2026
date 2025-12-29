@@ -11,17 +11,9 @@ body {
   background: linear-gradient(#ffe6ef, #ffffff);
 }
 
-/* TELAS */
-.screen {
-  display: none;
-  padding: 20px;
-}
+.screen { display: none; padding: 20px; }
+.active { display: block; }
 
-.active {
-  display: block;
-}
-
-/* LOGIN */
 .login-card {
   max-width: 350px;
   margin: 100px auto;
@@ -32,35 +24,30 @@ body {
   text-align: center;
 }
 
-.login-card h1 {
-  color: #ff5fa2;
-}
-
-input {
+input, button {
   width: 100%;
   padding: 12px;
-  margin: 10px 0;
+  margin-top: 10px;
   border-radius: 12px;
   border: 1px solid #ffd1e4;
 }
 
 button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 14px;
   background: #ff5fa2;
   color: white;
-  font-size: 16px;
+  border: none;
 }
 
-/* APP */
-header {
-  background: white;
-  padding: 15px;
-  border-radius: 20px;
-  text-align: center;
+.menu {
+  display: flex;
+  justify-content: space-around;
   margin-bottom: 15px;
+}
+
+.menu button {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 14px;
 }
 
 .card {
@@ -68,19 +55,6 @@ header {
   padding: 15px;
   border-radius: 16px;
   margin-bottom: 10px;
-}
-
-.progress {
-  height: 10px;
-  background: #eee;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress div {
-  height: 100%;
-  width: 40%;
-  background: #ff5fa2;
 }
 </style>
 </head>
@@ -90,7 +64,7 @@ header {
 <!-- LOGIN -->
 <div id="login" class="screen active">
   <div class="login-card">
-    <h1>✨ Metas 2026</h1>
+    <h2>✨ Metas 2026</h2>
     <input placeholder="Email">
     <input type="password" placeholder="Senha">
     <button onclick="entrar()">Entrar</button>
@@ -99,34 +73,60 @@ header {
 
 <!-- APP -->
 <div id="app" class="screen">
-  <header>
-    <h2>🌸 Olá!</h2>
-    <p>Seu planner 2026</p>
-  </header>
 
-  <div class="card">
-    <h3>🎯 Meta Principal</h3>
-    <p>Exemplo: Organizar minha vida</p>
-    <div class="progress">
-      <div></div>
-    </div>
+  <!-- MENU -->
+  <div class="menu">
+    <button onclick="mostrar('metas')">🎯 Metas</button>
+    <button onclick="mostrar('planner')">📅 Planner</button>
   </div>
 
-  <div class="card">
-    <h3>📅 Planner</h3>
-    <p>Hoje: estudar • beber água • descansar</p>
+  <!-- METAS -->
+  <div id="metas" class="card">
+    <h3>🎯 Minhas Metas</h3>
+    <input id="novaMeta" placeholder="Nova meta">
+    <button onclick="addMeta()">Adicionar</button>
+    <ul id="listaMetas"></ul>
   </div>
 
-  <div class="card">
-    <h3>📊 Progresso</h3>
-    <p>40% do ano concluído</p>
+  <!-- PLANNER -->
+  <div id="planner" class="card" style="display:none;">
+    <h3>📅 Hoje</h3>
+    <input id="novaTarefa" placeholder="Nova tarefa">
+    <button onclick="addTarefa()">Adicionar</button>
+    <ul id="listaTarefas"></ul>
   </div>
+
 </div>
 
 <script>
 function entrar() {
-  document.getElementById("login").classList.remove("active");
-  document.getElementById("app").classList.add("active");
+  login.classList.remove("active");
+  app.classList.add("active");
+}
+
+function mostrar(secao) {
+  metas.style.display = secao === "metas" ? "block" : "none";
+  planner.style.display = secao === "planner" ? "block" : "none";
+}
+
+function addMeta() {
+  let texto = novaMeta.value;
+  if (!texto) return;
+  let li = document.createElement("li");
+  li.innerHTML = texto + " ❌";
+  li.onclick = () => li.remove();
+  listaMetas.appendChild(li);
+  novaMeta.value = "";
+}
+
+function addTarefa() {
+  let texto = novaTarefa.value;
+  if (!texto) return;
+  let li = document.createElement("li");
+  li.innerHTML = texto + " ✅";
+  li.onclick = () => li.remove();
+  listaTarefas.appendChild(li);
+  novaTarefa.value = "";
 }
 </script>
 
